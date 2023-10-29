@@ -6,6 +6,7 @@ use App\Models\Platform;
 use App\Models\Shipment;
 use App\Models\ShipmentItem;
 use App\Models\ShipmentDetail;
+use App\Shipping\Enums\ShipmentStatus;
 use App\Shipping\Interfaces\DTOInterface;
 
 interface ShippingRepositoryInterface
@@ -86,4 +87,13 @@ interface ShippingRepositoryInterface
      * @return void
      */
     public function markShipmentAsCreated(Shipment $shipment, string|int $shipmentId);
+
+    /**
+     * Change the shipment status.
+     *
+     * @param  Shipment $shipment
+     * @param  ShipmentStatus $status
+     * @return void
+     */
+    public function changeStatus(Shipment $shipment, ShipmentStatus $status);
 }

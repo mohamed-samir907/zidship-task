@@ -86,4 +86,14 @@ class ShippingRepository implements ShippingRepositoryInterface
             "status" => ShipmentStatus::Created->value,
         ]);
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function changeStatus(Shipment $shipment, ShipmentStatus $status)
+    {
+        $shipment->update([
+            "status" => $status->value,
+        ]);
+    }
 }

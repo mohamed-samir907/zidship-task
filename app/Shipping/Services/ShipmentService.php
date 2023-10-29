@@ -124,5 +124,7 @@ final class ShipmentService
         $service = CourierShipmentCancelServiceFactory::create($shipment->platform->key);
 
         $service->cancel($shipment);
+
+        $this->repo->changeStatus($shipment, ShipmentStatus::Canceled);
     }
 }
