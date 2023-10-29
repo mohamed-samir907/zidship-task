@@ -35,9 +35,13 @@ I used MySQL for several reasons:
 - we can enhance the shipment creation to be async using background jobs instead of the current behavior (sync). and when failuer we will notify the user. this will improve the UX.
 
 **dummy courier**
+
 I create `fake` Integration module `DummyCourier` which returns a hard coded values instead of the values from the real integration.
 
 Why i created that module? I tried integration with `Aramex`, also the example provided `KwickBox` but I faced issues with login credentials and tokens. Moreover, I started the task late so I didn't have the time to investigate the issues. So i created the dummy module to use at as a Prove of Concept.
+
+You can disable dummy courier by set the value of `DUMMY_COURIER` to `false` in `.env` file.
+But for testing make sure its value equals `true`
 
 # Requirements
 - PHP 8.2
