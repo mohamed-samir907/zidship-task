@@ -1,66 +1,234 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Zid Ship
+This app has a unified module located in `app/Shipping` directory that handle the shipping functions in any platform without the need to custom implement courior integration independently.
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+I tried to make it as simple as I could, but also reliable, and extendable.
 
-## About Laravel
+In order to achive that, I used known patterns and Princibles like `Open Closed Principle` which gaves me the flexabilty of adding any integration without break the constraints of the module. Also i have to use Strategy pattern and factory, all of them gaves me the flexability of switching between the platforms in the runtime.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+You will see in the module the following directories:
+- `DTOs` used DTO to transfer data between layers instead of using array which makes the data not clear, but using the DTO defines the structure and expected data types of the data it holds.
+- `Enums`
+- `Factories` contains the factories responsbile for creating the service that handle the action based on the platform.
+- `Http`
+- `Interfaces` Common interface any integration must implement.
+- `Repositories`
+- `Services` Contains the services that handle everything and switching between platforms.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+You can look at the `AppServiceProvider` to see the interface & integrations bindings.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+I created another directory `app/Integrations` which will contain any courier integration. The integration must implement the interfaces from the `app/Shipping` module.
 
-## Learning Laravel
+**database**
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+I used MySQL for several reasons:
+- It's easy to use in Laravel.
+- The data entities in this task looks related to each other like (shipments, platforms, users, ...) so a relational database will be good for this case.
+- It allows normailzing the data and quering between related tables easly.
+- The performance can be improved easly when needed by adding propper index, and do query optimization.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+**suggestions**
+- instead of getting the status from the API direct which my take long time we can get it from the database direct.
+- so to do that we should implement webhooks for the platforms support it to get the status of the shipment and update it with new status.
+- in case of the platform not supporting webhooks, we can add a schedule commands and background jobs to get the status from the tracking service of each platform and update the status on our database.
+- handle API rate limit.
+- add mechanism to retry the failed requests in case of getting errors from the platform or rate limit error (like circuit breaker)
+- we can enhance the shipment creation to be async using background jobs instead of the current behavior (sync). and when failuer we will notify the user. this will improve the UX.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+**dummy courier**
+I create `fake` Integration module `DummyCourier` which returns a hard coded values instead of the values from the real integration.
 
-## Laravel Sponsors
+Why i created that module? I tried integration with `Aramex`, also the example provided `KwickBox` but I faced issues with login credentials and tokens. Moreover, I started the task late so I didn't have the time to investigate the issues. So i created the dummy module to use at as a Prove of Concept.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+# Requirements
+- PHP 8.2
+- MySQL
 
-### Premium Partners
+# Installation
+1. Clone the repository.
+2. Copy `.env.example` as `.env` file.
+```
+cp .env.example .env
+```
+3. Create a database and edit `.env` file with your credentails.
+4. Run the following command `php artisan migrate --seed` to create the tables and create test data.
+5. Create a token for the user to be used in the API.
+```
+php artisan tinker
+```
+```php
+$user = User::first();
+$user->createToken("test")->plainTextToken;
+```
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+# Tests
+```
+php artisan test
+```
 
-## Contributing
+# API
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Path Table
 
-## Code of Conduct
+| Method | Path | Description |
+| --- | --- | --- |
+| POST | [/api/v1/shipments](#postapiv1shipments) | Create Shipping |
+| GET | [/api/v1/shipments/{id}/status](#getapiv1shipments7status) | Get Shipping Status |
+| GET | [/api/v1/shipments/{id}/print](#getapiv1shipments1print) | Print Shipping Label |
+| PUT | [/api/v1/shipments/{id}/cancel](#putapiv1shipments1cancel) | Cancel Shipping |
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+***
 
-## Security Vulnerabilities
+### [POST]/api/v1/shipments
+Create Shipping
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+#### Headers
 
-## License
+```http
+Content-Type: "application/json"
+Accept: "application/json"
+Authroization: "Bearer {{user-token}}"
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+#### RequestBody
+
+```json
+{
+    "platform": "kwickbox",
+    "cod": true,
+    "pickup_date": "2023-10-31",
+    "sender": {
+        "name": "Mohamed Samir",
+        "phone": "+201026687240",
+        "email": "gm.mohamedsamir@gmail.com",
+        "country": "EG",
+        "state": null,
+        "city": "Cairo",
+        "postal_code": null,
+        "address_line1": "Cairo",
+        "address_line2": null,
+        "address_line3": null
+    },
+    "recipient": {
+        "name": "Ahmed Samir",
+        "phone": "+201026687240",
+        "email": null,
+        "country": "EG",
+        "state": null,
+        "city": "Alexandria",
+        "postal_code": null,
+        "address_line1": "Alexandria",
+        "address_line2": null,
+        "address_line3": null
+    },
+    "items": [
+        {
+            "title": "Product 1",
+            "description": null,
+            "quantity": 1,
+            "weight": 2.50,
+            "unit": "kg",
+            "price": 500
+        }
+    ]
+}
+```
+
+#### Responses
+
+- 200 Successful response
+
+```json
+{
+    "message": "Waybill created successfully",
+    "data": {
+        "id": 22,
+        "status": "draft"
+    }
+}
+```
+
+- 422 Validation error response
+
+```json
+{
+    "message": "The selected platform is invalid.",
+    "errors": {
+        "platform": [
+            "The selected platform is invalid."
+        ]
+    }
+}
+```
+
+***
+
+### [GET]/api/v1/shipments/7/status
+Get Shipping Status
+
+#### Headers
+
+```http
+Accept: "application/json"
+Authroization: "Bearer {{user-token}}"
+```
+
+#### Responses
+
+- 200 Successful response
+
+```json
+{
+  "message": "OK",
+  "data": {
+    "status": "received"
+  }
+}
+```
+
+***
+
+### [GET]/api/v1/shipments/1/print
+Print Shipping Label
+
+#### Headers
+
+```http
+Accept: "application/json"
+Authroization: "Bearer {{user-token}}"
+```
+
+#### Responses
+
+- 200 Successful response
+
+```json
+{
+  "message": "OK",
+  "data": {
+    "url": "https://fake-url.com/shipment-label.pdf"
+  }
+}
+```
+
+***
+
+### [PUT]/api/v1/shipments/1/cancel
+Cancel Shipping
+
+#### Headers
+
+```http
+Accept: "application/json"
+Authroization: "Bearer {{user-token}}"
+```
+
+#### Responses
+
+- 200 Successful response
+
+```json
+{
+  "message": "OK",
+  "data": []
+}
+```
