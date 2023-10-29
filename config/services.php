@@ -31,4 +31,8 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'kwickbox' => [
+        'api_key' => env('KWICK_BOX_API_KEY'),
+    ],
+
 ];

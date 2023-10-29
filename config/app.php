@@ -5,6 +5,8 @@ use Illuminate\Support\ServiceProvider;
 
 return [
 
+    'dummy-courier' => env('DUMMY_COURIER', true),
+
     /*
     |--------------------------------------------------------------------------
     | Application Name
